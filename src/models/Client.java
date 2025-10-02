@@ -2,15 +2,15 @@ package models;
 
 
     public class Client {
-        private int id;        // correspond à client.id en base
+        private int id;
         private String nom;
 
-        // Constructeur pour créer un client avant insertion (id pas encore défini)
+
         public Client(String nom) {
             this.nom = nom;
         }
 
-        // Constructeur pour récupérer un client depuis la DB
+
         public Client(int id, String nom) {
             this.id = id;
             this.nom = nom;

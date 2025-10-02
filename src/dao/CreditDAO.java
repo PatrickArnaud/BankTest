@@ -1,6 +1,8 @@
 package dao;
 
 import models.Credit;
+import models.Echeance;
+import services.CreditServices;
 import utils.DBConnect;
 
 import java.sql.Connection;
@@ -14,15 +16,29 @@ public class CreditDAO {
 
 
     public void ajouter(Credit credit, int clientId) {
-        String sql = "INSERT INTO credits(montant, taux_annuel, duree_mois, client_id) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO credits(montant, taux_annuel, duree_mois, client_id) VALUES (?, ?, ?, ?) RETURNING id";
+
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setDouble(1, credit.getMontant());
             stmt.setDouble(2, credit.getTauxAnnuel());
             stmt.setInt(3, credit.getDureeMois());
             stmt.setInt(4, clientId);
-            stmt.executeUpdate();
-        } catch ( SQLException e) {
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int creditId = rs.getInt("id");
+
+                List<Echeance> echeances = CreditServices.genererTableau(
+                        credit.getMontant(),
+                        credit.getTauxAnnuel(),
+                        credit.getDureeMois()
+                );
+                new EcheanceDAO().ajouterEcheances(echeances, creditId);
+            }
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

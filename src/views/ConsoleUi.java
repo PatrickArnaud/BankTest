@@ -3,6 +3,8 @@ import dao.ClientDAO;
 import dao.CreditDAO;
 import models.Client;
 import models.Credit;
+import models.Echeance;
+import services.CreditServices;
 
 import java.util.List;
 import java.util.Scanner;
@@ -21,6 +23,7 @@ public class ConsoleUi {
             System.out.println("3. Afficher les crédits d’un client");
             System.out.println("4. Lister tous les clients");
             System.out.println("5. Quitter");
+            System.out.println("6. Calculer tableau d’amortissement");
             System.out.print("Choix : ");
 
             int choix = scanner.nextInt();
@@ -35,6 +38,7 @@ public class ConsoleUi {
                     quitter = true;
                     System.out.println("Au revoir !");
                 }
+                case 6 -> genererAmortissement();
                 default -> System.out.println("Choix invalide !");
             }
         }
@@ -87,8 +91,23 @@ public class ConsoleUi {
         }
 
         System.out.println("Crédits de " + client.getNom() + " :");
-        for (Credit c : credits) {
-            System.out.println(" - " + c);
+        for (int i = 0; i < credits.size(); i++) {
+            System.out.println((i + 1) + ". " + credits.get(i));
+        }
+
+        System.out.print("Choisir un crédit pour voir le tableau d'amortissement (0 = retour) : ");
+        int choix = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choix > 0 && choix <= credits.size()) {
+            Credit credit = credits.get(choix - 1);
+            System.out.println("\n=== Tableau d'amortissement ===");
+            var tableau = services.CreditServices.genererTableau(
+                    credit.getMontant(),
+                    credit.getTauxAnnuel(),
+                    credit.getDureeMois()
+            );
+            services.CreditServices.afficherTableau(tableau);
         }
     }
 
@@ -101,5 +120,21 @@ public class ConsoleUi {
         System.out.println("Liste des clients :");
         for (Client c : clients) {
             System.out.println(" - " + c);
-        }}
+        }
+    }
+
+    private void genererAmortissement() {
+        System.out.print("Montant du crédit (€): ");
+        double montant = scanner.nextDouble();
+
+        System.out.print("Taux annuel (%): ");
+        double taux = scanner.nextDouble();
+
+        System.out.print("Durée (années): ");
+        int duree = scanner.nextInt();
+
+        List<Echeance> tableau = CreditServices.genererTableau(montant, taux, duree);
+        System.out.println("\n=== Tableau d'amortissement ===");
+        CreditServices.afficherTableau(tableau);
+    }
 }
